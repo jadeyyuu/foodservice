@@ -1,3 +1,19 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import CustomerSerializer
+
+# List at the end of the views.py
+# Lists all customers
+class CustomerList(APIView):
+
+    def get(self,request):
+        customers_json = Customer.objects.all()
+        serializer = CustomerSerializer(customers_json, many=True)
+        return Response(serializer.data)
+
+
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import *
@@ -113,10 +129,9 @@ def product_new(request):
 def product_edit(request, pk):
    product = get_object_or_404(Product, pk=pk)
    if request.method == "POST":
-       form = ServiceForm(request.POST, instance=service)
+       form = ProductForm(request.POST, instance=product)
        if form.is_valid():
            product = form.save()
-           # service.customer = service.id
            product.updated_date = timezone.now()
            product.save()
            products = Product.objects.filter(created_date__lte=timezone.now())
@@ -125,6 +140,7 @@ def product_edit(request, pk):
        # print("else")
        form = ProductForm(instance=product)
    return render(request, 'crm/product_edit.html', {'form': form})
+
 
 @login_required
 def product_delete(request, pk):
@@ -145,3 +161,4 @@ def summary(request, pk):
                                                     'services': services,
                                                     'sum_service_charge': sum_service_charge,
                                                     'sum_product_charge': sum_product_charge,})
+
